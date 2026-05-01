@@ -1,0 +1,9 @@
+commune,latitude,longitude,method,geojson_status
+Belfort,47.6379599,6.8628942,nominatim,missing
+Offemont,47.6609928,6.87575,nominatim,missing
+Valdoie,47.661335,6.8469986,nominatim,missing
+Éloie,47.6896996,6.8719671,nominatim,missing
+Grosmagny,47.7235585,6.8854947,nominatim,missing
+Petitmagny,47.7211701,6.8987238,nominatim,missing
+Étueffont,47.723257,6.9228236,nominatim,missing
+Lamadeleine-Val-des-Anges,47.7616425,6.9140975,nominatim,missing

@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  color-communes:
+    build:
+      context: ..
+      dockerfile: config/Dockerfile
+    container_name: color_communes_bot
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_USER_ID=${TELEGRAM_USER_ID}
+      - NOMINATIM_EMAIL=${NOMINATIM_EMAIL}
+      - DATABASE_PATH=/data/color_communes.db
+      - GEOJSON_CACHE_DIR=/data/geojson_cache
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+
+    volumes:
+      - /volume1/docker/color-communes/data:/data
+      - /volume1/docker/color-communes/communes_mapping.csv:/app/communes_mapping.csv
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge

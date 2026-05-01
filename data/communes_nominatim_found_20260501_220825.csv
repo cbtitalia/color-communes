@@ -1,0 +1,4 @@
+commune,latitude,longitude,method,geojson_status
+Vandoncourt,,,nominatim,missing
+Hérimoncourt,,,nominatim,missing
+Abbévillers,,,nominatim,missing

@@ -1,12 +1,12 @@
 nom_original,nom_correct,code_insee,departement,latitude,longitude,notes
 Belfort,Belfort,90010,90,47.6379599,6.8628942,Enrichi 30/04
-Offemont,Offemont,90068,90,47.6609928,6.87575,Enrichi 30/04
-Valdoie,Valdoie,90078,90,47.6651582,6.8413823,Enrichi 30/04
+Offemont,Offemont,90075,90,47.6609928,6.87575,Enrichi 30/04
+Valdoie,Valdoie,90099,90,47.6651582,6.8413823,Enrichi 30/04
 Éloie,Éloie,90039,90,47.6896996,6.8719671,Enrichi 30/04
-Grosmagny,Grosmagny,90048,90,47.7235585,6.8854947,Enrichi 30/04
-Petitmagny,Petitmagny,90073,90,47.7211701,6.8987238,Enrichi 30/04
+Grosmagny,Grosmagny,90054,90,47.7235585,6.8854947,Enrichi 30/04
+Petitmagny,Petitmagny,90079,90,47.7211701,6.8987238,Enrichi 30/04
 Étueffont,Étueffont,90040,90,47.723257,6.9228236,Enrichi 30/04
-Lamadeleine-Val-des-Anges,Lamadeleine-Val-des-Anges,90055,90,47.7616425,6.9140975,Enrichi 30/04
+Lamadeleine-Val-des-Anges,Lamadeleine-Val-des-Anges,90061,90,47.7616425,6.9140975,Enrichi 30/04
 Rougegoutte,Rougegoutte,90088,90,47.734,6.85,Ajout 30/04
 Faverois,Faverois,90043,90,47.521,7.037,Ajout 30/04
 Menoncourt,Menoncourt,90067,90,47.6708,6.94778,Ajout 30/04

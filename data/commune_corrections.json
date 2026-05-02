@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "description": "Mapping pour corriger les noms de communes non reconnus par Nominatim",
+  "corrections": {
+    "Giromagny": "Giromagny",
+    "Rougegoutte": "Rougegoutte"
+  },
+  "usage": "Dans map_service.py: if nom_geojson in corrections, remplacer par corrections[nom_geojson]",
+  "notes": [
+    "Ajouter d'autres corrections si d'autres communes ne sont pas trouvées",
+    "multi_corrections: Une commune → plusieurs communes (divisées)"
+  ],
+  "multi_corrections": {
+    "Meroux Moval": [
+      "Meroux",
+      "Moval"
+    ]
+  }
+}

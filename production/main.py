@@ -759,6 +759,146 @@ async def callback_validate_reject(update: Update, context: ContextTypes.DEFAULT
         "Le GPX conserve ses données originales"
     )
 
+def generate_rapport_html(report_filename: str) -> str:
+    """Générer une page HTML du rapport"""
+    import csv
+
+    try:
+        statuts = {'VALID': 0, 'CORRECTED': 0, 'UNKNOWN': 0, 'REJECTED': 0}
+        corrections = []
+        rejetes = []
+
+        with open(report_filename, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                status = row['statut']
+                statuts[status] = statuts.get(status, 0) + 1
+
+                if status == 'CORRECTED':
+                    corrections.append((row['commune_original'], row['commune_finale']))
+                elif status == 'REJECTED':
+                    rejetes.append((row['commune_original'], row['raison']))
+
+        html = f"""
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>Rapport Phase 2 - Communes</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }}
+                .container {{ max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }}
+                h1 {{ color: #333; }}
+                .stats {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0; }}
+                .stat {{ background: #f0f0f0; padding: 15px; border-radius: 5px; text-align: center; }}
+                .stat-value {{ font-size: 24px; font-weight: bold; color: #007bff; }}
+                .stat-label {{ color: #666; margin-top: 5px; }}
+                table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
+                th, td {{ padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }}
+                th {{ background: #f0f0f0; font-weight: bold; }}
+                tr:hover {{ background: #f9f9f9; }}
+                .correction {{ color: #ff9800; }}
+                .rejected {{ color: #f44336; }}
+                .timestamp {{ color: #999; font-size: 12px; margin-top: 20px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>📊 Rapport Phase 2 - Communes</h1>
+
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value">{statuts['VALID']}</div>
+                        <div class="stat-label">Valides</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" style="color: #ff9800;">{statuts['CORRECTED']}</div>
+                        <div class="stat-label">Corrigées</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" style="color: #2196f3;">{statuts['UNKNOWN']}</div>
+                        <div class="stat-label">Inconnues (acceptées)</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" style="color: #f44336;">{statuts['REJECTED']}</div>
+                        <div class="stat-label">Rejetées</div>
+                    </div>
+                </div>
+
+                {f'<h2>🔧 Corrections appliquées ({len(corrections)})</h2><table><tr><th>Original</th><th>Corrigé</th></tr>' + ''.join([f'<tr><td class="correction">{orig}</td><td>{corr}</td></tr>' for orig, corr in corrections]) + '</table>' if corrections else ''}
+
+                {f'<h2>❌ Communes rejetées ({len(rejetes)})</h2><table><tr><th>Commune</th><th>Raison</th></tr>' + ''.join([f'<tr><td class="rejected">{comm}</td><td>{raison}</td></tr>' for comm, raison in rejetes]) + '</table>' if rejetes else ''}
+
+                <p class="timestamp">Généré: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+            </div>
+        </body>
+        </html>
+        """
+        return html
+    except Exception as e:
+        logger.error(f"Erreur génération HTML rapport: {e}")
+        return f"<h1>Erreur</h1><p>{e}</p>"
+
+async def send_suspicious_communes(update: Update, context: ContextTypes.DEFAULT_TYPE, communes_suspects: list, filename: str) -> None:
+    """Envoyer les communes suspectes pour validation"""
+    from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+
+    for idx, commune in enumerate(communes_suspects[:5]):
+        keyboard = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton("✅ Ajouter", callback_data=f"add_commune_{idx}_{commune['name']}"),
+                InlineKeyboardButton("❌ Ignorer", callback_data=f"skip_commune_{idx}_{commune['name']}")
+            ]
+        ])
+
+        msg = (
+            f"⚠️ **Commune suspecte détectée**\n\n"
+            f"📍 {commune['name']}\n"
+            f"📊 Passages: {commune['count']}\n"
+            f"🗺️  Coords: {commune['lat']:.4f}, {commune['lon']:.4f}\n"
+            f"📝 Code INSEE: {commune['code']}\n\n"
+            f"Ajouter à communes_mapping.csv ?"
+        )
+
+        await update.message.reply_text(msg, reply_markup=keyboard, parse_mode='Markdown')
+        logger.info(f"Suggestion envoyée: {commune['name']}")
+
+async def handle_add_commune(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Ajouter une commune à communes_mapping.csv"""
+    query = update.callback_query
+    commune_name = query.data.split('_', 3)[-1]
+
+    await query.answer(f"✅ {commune_name} sera ajoutée")
+
+    try:
+        # Ajouter directement à communes_mapping.csv (dans le conteneur)
+        import csv
+        mapping_file = Path('/app/communes_mapping.csv')
+
+        # Ajouter la ligne
+        with open(mapping_file, 'a', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            # Format: nom_original,nom_correct,code_insee,departement,latitude,longitude,notes
+            writer.writerow([commune_name, commune_name, '90052', '90', '0.0', '0.0', 'Auto-validation Telegram'])
+
+        await query.edit_message_text(f"✅ {commune_name} ajoutée!\n\n⚠️ Redémarrage du bot en cours...")
+        logger.info(f"✅ Commune ajoutée: {commune_name}")
+
+        # Redémarrer le bot pour recharger communes_mapping.csv
+        context.bot_data['restart_needed'] = True
+
+    except Exception as e:
+        await query.edit_message_text(f"❌ Erreur: {str(e)[:100]}")
+        logger.error(f"Erreur ajout commune: {e}")
+
+async def handle_skip_commune(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Ignorer une commune"""
+    query = update.callback_query
+    commune_name = query.data.split('_', 3)[-1]
+
+    await query.answer(f"⏭️ {commune_name} ignorée")
+    await query.edit_message_text(f"⏭️ {commune_name} ignorée")
+    logger.info(f"Commune skipped: {commune_name}")
+
 async def handle_gpx(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handler reception fichier GPX"""
     user = update.effective_user
@@ -846,6 +986,26 @@ async def handle_gpx(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
             if rejected_count > 0:
                 logger.info(f"🚫 Phase 2 - {rejected_count} communes rejetées")
 
+            # 🆕 Détecter communes avec problèmes de code INSEE
+            communes_suspects = []
+            for commune_name, coords in communes_raw.items():
+                # Vérifier si la commune est dans communes_mapping.csv
+                processed = commune_processor.process(commune_name)
+                if processed.status == ProcessStatus.UNKNOWN:
+                    # Commune non reconnue mais acceptée par Nominatim
+                    communes_suspects.append({
+                        'name': commune_name,
+                        'lat': coords.get('lat'),
+                        'lon': coords.get('lon'),
+                        'code': coords.get('code', 'INCONNU'),
+                        'count': coords.get('count', 0)
+                    })
+
+            # Envoyer suggestions via Telegram si communes suspectes
+            if communes_suspects:
+                logger.info(f"🔍 {len(communes_suspects)} communes suspectes détectées")
+                await send_suspicious_communes(update, context, communes_suspects, file.file_name)
+
             # Générer rapport Phase 2 (correspondance communes traitées)
             import csv
             from datetime import datetime as dt
@@ -859,6 +1019,18 @@ async def handle_gpx(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
                         final_name = processed.corrected_name or commune_name
                         writer.writerow([commune_name, processed.status.value, final_name, processed.reason or ''])
                 logger.info(f"Rapport Phase 2 sauvegardé: {report_filename}")
+
+                # 🆕 Générer HTML du rapport
+                try:
+                    logger.info(f"🔄 Génération HTML du rapport...")
+                    html_rapport = generate_rapport_html(report_filename)
+                    html_filename = report_filename.replace('.csv', '.html')
+                    logger.info(f"📝 Écriture HTML dans: {html_filename}")
+                    with open(html_filename, 'w', encoding='utf-8') as f:
+                        f.write(html_rapport)
+                    logger.info(f"✅ Rapport HTML généré: {html_filename}")
+                except Exception as e:
+                    logger.error(f"❌ Erreur génération HTML: {e}", exc_info=True)
             except Exception as e:
                 logger.error(f"Erreur génération rapport Phase 2: {e}")
             # 🆕 GÉNÉRER CSV COMMUNES NOMINATIM (APPROCHE HYBRIDE)
@@ -946,6 +1118,9 @@ async def handle_gpx(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
             if villages_count > 0:
                 location_str += f" | 🏞️ Villages: {villages_count}"
 
+            # Lister les communes colorisées (triées par count décroissant)
+            communes_sorted = sorted(communes.items(), key=lambda x: x[1].get('count', 0), reverse=True)
+
             caption = (
                 f"✅ Carte générée!\n\n"
                 f"{location_str}\n"
@@ -960,6 +1135,21 @@ async def handle_gpx(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
                 photo=png_bytes,
                 caption=caption
             )
+
+            # Envoyer la liste des communes dans un message séparé
+            try:
+                communes_list = "🏘️ Communes traversées:\n\n"
+                for name, data in communes_sorted[:20]:
+                    communes_list += f"  • {name} ({data.get('count', 0)})\n"
+                if len(communes_sorted) > 20:
+                    communes_list += f"\n... et {len(communes_sorted) - 20} autres communes"
+
+                logger.info(f"Envoi liste communes ({len(communes_sorted)} total)")
+                await update.message.reply_text(communes_list)
+                logger.info("Liste communes envoyée ✓")
+            except Exception as e:
+                logger.error(f"Erreur envoi liste communes: {e}")
+                pass
 
             # Afficher rapport non-matches si nécessaire
             if unmatched:
@@ -1096,6 +1286,10 @@ def main() -> None:
     application.add_handler(CallbackQueryHandler(callback_validate_skip, pattern='^validate_skip_'))
     application.add_handler(CallbackQueryHandler(callback_validate_apply, pattern='^validate_apply$'))
     application.add_handler(CallbackQueryHandler(callback_validate_reject, pattern='^validate_reject$'))
+
+    # 🆕 Handlers pour validation communes suspectes
+    application.add_handler(CallbackQueryHandler(handle_add_commune, pattern='^add_commune_'))
+    application.add_handler(CallbackQueryHandler(handle_skip_commune, pattern='^skip_commune_'))
 
     # Error handler
     application.add_error_handler(error_handler)

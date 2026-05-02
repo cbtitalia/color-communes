@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 from matplotlib.colors import LinearSegmentedColormap
 import io
+import json
 import unicodedata
 from pathlib import Path
 from typing import Optional, Dict
@@ -44,15 +45,30 @@ class MapService:
         },
     }
 
-    def __init__(self, output_dir: str = "/data"):
+    def __init__(self, output_dir: str = "/data", corrections_file: str = "/data/commune_corrections.json"):
         """
         Initialiser le service
 
         Args:
             output_dir: Répertoire pour sauvegarder les PNG
+            corrections_file: Fichier JSON avec corrections de noms de communes
         """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Charger les corrections de noms
+        self.corrections = {}
+        self.multi_corrections = {}
+        corrections_path = Path(corrections_file)
+        if corrections_path.exists():
+            try:
+                with open(corrections_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    self.corrections = data.get('corrections', {})
+                    self.multi_corrections = data.get('multi_corrections', {})
+                    logger.info(f"Corrections chargées: {len(self.corrections)} + {len(self.multi_corrections)} multi")
+            except Exception as e:
+                logger.warning(f"Impossible charger corrections: {e}")
 
     @staticmethod
     def _normalize_name(name: str) -> str:
@@ -66,17 +82,22 @@ class MapService:
         name = str(name).lower().replace(' ', '').replace('-', '').replace("'", '')
         return name
 
-    def _get_color(self, nb_passages: int, palette: str = 'classic') -> str:
+    def _get_color(self, nb_passages: int, palette: str = 'classic', commune_name: str = '') -> str:
         """
         Obtenir la couleur selon le nombre de passages et palette
 
         Args:
             nb_passages: Nombre de passages
             palette: Nom de la palette ('classic', 'vibrant', 'pastel', 'grayscale')
+            commune_name: Nom de la commune (pour exceptions)
 
         Returns:
             Code couleur hex
         """
+        # Exception : Belfort toujours en vert
+        if commune_name and commune_name.lower() == 'belfort':
+            return '#76FF03'  # Vert lime
+
         colors = self.PALETTES.get(palette, self.PALETTES['classic'])
 
         if nb_passages >= 10:
@@ -88,13 +109,13 @@ class MapService:
         else:
             return colors[1]
 
-    def _filter_isolated_geometries(self, gdf, max_distance_km: float = 10.0):
+    def _filter_isolated_geometries(self, gdf, max_distance_km: float = 20.0):
         """
         Enlever les polygones isolés (fragmentés) trop loin du centre de masse
 
         Args:
             gdf: GeoDataFrame
-            max_distance_km: Distance max en km (défaut: 10 km)
+            max_distance_km: Distance max en km (défaut: 20 km pour inclure communes isolées comme Gyromagny)
 
         Returns:
             GeoDataFrame filtré
@@ -179,19 +200,29 @@ class MapService:
 
                         # Chercher exact d'abord
                         if nom_geojson in communes:
-                            gdf.loc[idx, 'color'] = self._get_color(communes[nom_geojson]['count'], palette)
+                            gdf.loc[idx, 'color'] = self._get_color(communes[nom_geojson]['count'], palette, nom_geojson)
                             gdf.loc[idx, 'visited'] = True
                             logger.info(f"✓ Match exact: {nom_geojson} (count={communes[nom_geojson]['count']})")
                         else:
                             # Chercher par nom normalisé
                             for comm_name, comm_data in communes.items():
                                 if self._normalize_name(comm_name) == nom_norm:
-                                    gdf.loc[idx, 'color'] = self._get_color(comm_data['count'], palette)
+                                    gdf.loc[idx, 'color'] = self._get_color(comm_data['count'], palette, nom_geojson)
                                     gdf.loc[idx, 'visited'] = True
                                     logger.info(f"✓ Match norm: {nom_geojson} ≈ {comm_name} (count={comm_data['count']})")
                                     break
                             else:
-                                logger.debug(f"✗ Pas de match: {nom_geojson}")
+                                # Chercher avec corrections (typos/variations)
+                                if nom_geojson in self.corrections:
+                                    corrected_name = self.corrections[nom_geojson]
+                                    if corrected_name in communes:
+                                        gdf.loc[idx, 'color'] = self._get_color(communes[corrected_name]['count'], palette, nom_geojson)
+                                        gdf.loc[idx, 'visited'] = True
+                                        logger.info(f"✓ Match correction: {nom_geojson} → {corrected_name} (count={communes[corrected_name]['count']})")
+                                    else:
+                                        logger.debug(f"✗ Correction appliquée mais pas trouvée: {nom_geojson} → {corrected_name}")
+                                else:
+                                    logger.debug(f"✗ Pas de match: {nom_geojson}")
 
                     # Dessiner les communes
                     gdf.plot(ax=ax, color=gdf['color'], edgecolor='#333333', linewidth=0.2, zorder=5)

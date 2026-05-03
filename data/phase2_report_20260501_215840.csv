@@ -1,0 +1,12 @@
+commune_original,statut,commune_finale,raison
+Belfort,corrected,Belfort,Orthographe corrigée
+Offemont,corrected,Offemont,Orthographe corrigée
+Valdoie,corrected,Valdoie,Orthographe corrigée
+Sermamagny,unknown,Sermamagny,Commune non trouvée dans le mapping
+Lachapelle-sous-Chaux,unknown,Lachapelle-sous-Chaux,Commune non trouvée dans le mapping
+Chaux,unknown,Chaux,Commune non trouvée dans le mapping
+Giromagny,corrected,Grosmagny,Correction floue (similarité: grosmagny)
+Le Phanitor,unknown,Le Phanitor,Commune non trouvée dans le mapping
+Chauveroche,unknown,Chauveroche,Commune non trouvée dans le mapping
+Malvaux,unknown,Malvaux,Commune non trouvée dans le mapping
+Lepuix,unknown,Lepuix,Commune non trouvée dans le mapping

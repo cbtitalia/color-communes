@@ -1,0 +1,109 @@
+═══════════════════════════════════════════════════════════════════
+🚀 COLOR-COMMUNES GITHUB SETUP - READY TO EXECUTE
+═══════════════════════════════════════════════════════════════════
+
+USERNAME: cbtitalia
+EMAIL: cbtitalia@gmail.com (adjust if different)
+
+═══════════════════════════════════════════════════════════════════
+STEP 1: CREATE REPO ON GITHUB.COM
+═══════════════════════════════════════════════════════════════════
+
+Go to: https://github.com/new
+
+Fill in these EXACT values:
+  Repository name: color-communes
+  Description: Telegram bot mapping French communes via GPX tracking
+  Visibility: Public
+  Initialize with: [LEAVE EMPTY]
+
+Click: Create repository
+
+═══════════════════════════════════════════════════════════════════
+STEP 2: COPY THE URL YOU GET
+═══════════════════════════════════════════════════════════════════
+
+After creating, GitHub shows:
+  https://github.com/cbtitalia/color-communes.git
+
+Keep it for next step ↓
+
+═══════════════════════════════════════════════════════════════════
+STEP 3: RUN THESE COMMANDS IN POWERSHELL
+═══════════════════════════════════════════════════════════════════
+
+IMPORTANT: Open PowerShell (NOT CMD, NOT Git Bash)
+
+Copy and paste ALL of this at once:
+
+───────────────────────────────────────────────────────────────────
+
+cd X:\color-communes
+
+git config --global user.name "cbtitalia"
+
+git config --global user.email "cbtitalia@gmail.com"
+
+git init
+
+git add .
+
+git commit -m "Initial commit: Color-communes bot - Phase 8 complete
+
+- Phase 1-8: Foundation complete (infrastructure, parsing, commands)
+- Phase 9: Import systems ready (Telegram + Batch GPX + Strava webhook)
+- Phase 10: Architecture designed (Docker monitoring + automation)
+- Database: SQLite with 682 communes
+- Documentation: Complete workflows + architecture diagrams
+- Organization: Production/config/scripts/archives structure
+
+Co-Authored-By: Claude Code <noreply@anthropic.com>"
+
+git branch -M main
+
+git remote add origin https://github.com/cbtitalia/color-communes.git
+
+git push -u origin main
+
+───────────────────────────────────────────────────────────────────
+
+═══════════════════════════════════════════════════════════════════
+STEP 4: VERIFY
+═══════════════════════════════════════════════════════════════════
+
+Visit: https://github.com/cbtitalia/color-communes
+
+You should see:
+  ✅ All your files
+  ✅ production/ folder
+  ✅ config/ folder
+  ✅ scripts/ folder
+  ✅ README.md
+  ✅ CLAUDE.md
+  ✅ Your commit message
+
+═══════════════════════════════════════════════════════════════════
+THAT'S IT! YOUR CODE IS BACKED UP 🎉
+═══════════════════════════════════════════════════════════════════
+
+From now on, after making changes:
+
+  git add .
+  git commit -m "your description"
+  git push origin main
+
+═══════════════════════════════════════════════════════════════════
+OPTIONAL: CREATE RELEASE TAG
+═══════════════════════════════════════════════════════════════════
+
+After pushing, if you want to mark this as v0.8.0:
+
+  git tag -a v0.8.0 -m "Phase 8: Commands + mapping complete"
+  git push origin v0.8.0
+
+Then when you complete Phase 9:
+
+  git tag -a v0.9.0 -m "Phase 9: Import systems complete"
+  git push origin v0.9.0
+
+═══════════════════════════════════════════════════════════════════

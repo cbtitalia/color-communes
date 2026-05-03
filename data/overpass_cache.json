@@ -1,0 +1,87 @@
+{
+  "Le Berger_25060": {
+    "lat": 47.608168,
+    "lon": 6.8473388,
+    "source": "Nominatim"
+  },
+  "Vourvenans_25586": {
+    "lat": 47.554446,
+    "lon": 6.8675923,
+    "source": "Nominatim"
+  },
+  "Colombier-Châtelot_25145": {
+    "lat": 47.438734,
+    "lon": 6.6295731,
+    "source": "Nominatim"
+  },
+  "Tournedoz_25559": {
+    "lat": 47.3720855,
+    "lon": 6.6074352,
+    "source": "Nominatim"
+  },
+  "Glainans_25260": {
+    "lat": 47.3779995,
+    "lon": 6.5833457,
+    "source": "Nominatim"
+  },
+  "L'Isle-Sur-Le-Doubs_25306": {
+    "lat": 47.4479052,
+    "lon": 6.5837522,
+    "source": "Nominatim"
+  },
+  "La Balistrerie_25032": {
+    "lat": 47.4516943,
+    "lon": 6.5913484,
+    "source": "Nominatim"
+  },
+  "Les Beussières_25064": {
+    "lat": 47.4537061,
+    "lon": 6.6344063,
+    "source": "Nominatim"
+  },
+  "La Raydans_25457": {
+    "lat": 47.4651896,
+    "lon": 6.7034314,
+    "source": "Nominatim"
+  },
+  "Buerglin_68058": {
+    "lat": 47.6004874,
+    "lon": 7.3811101,
+    "source": "Nominatim"
+  },
+  "Kraybach_68153": {
+    "lat": 47.5847461,
+    "lon": 7.4589734,
+    "source": "Nominatim"
+  },
+  "Ritty_68292": {
+    "lat": 47.6120714,
+    "lon": 7.5326258,
+    "source": "Nominatim"
+  },
+  "Hellhof_68142": {
+    "lat": 47.602729,
+    "lon": 7.5319688,
+    "source": "Nominatim"
+  },
+  "Welschen Schlag_68366": {
+    "lat": 47.6150816,
+    "lon": 7.5260459,
+    "source": "Nominatim"
+  },
+  "Mattenmuehle_68215": {
+    "lat": 47.6526707,
+    "lon": 7.4476146,
+    "source": "Nominatim"
+  },
+  "Oberemuehle_68251": {
+    "lat": 47.6486939,
+    "lon": 7.4381437,
+    "source": "Nominatim"
+  },
+  "Niedere Muehle_68239": {
+    "lat": 47.5515998,
+    "lon": 7.4828883,
+    "source": "Nominatim"
+  }
+}

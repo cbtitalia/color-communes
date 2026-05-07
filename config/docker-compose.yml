@@ -22,6 +22,12 @@ services:
     volumes:
       - /volume1/docker/color-communes/data:/data
       - /volume1/docker/color-communes/communes_mapping.csv:/app/communes_mapping.csv
+      - /volume1/docker/color-communes/communes_25_lookup.csv:/app/communes_25_lookup.csv
+      - /volume1/docker/color-communes/communes_39_lookup.csv:/app/communes_39_lookup.csv
+      - /volume1/docker/color-communes/communes_68_lookup.csv:/app/communes_68_lookup.csv
+      - /volume1/docker/color-communes/communes_70_lookup.csv:/app/communes_70_lookup.csv
+      - /volume1/docker/color-communes/communes_88_lookup.csv:/app/communes_88_lookup.csv
+      - /volume1/docker/color-communes/communes_90_lookup.csv:/app/communes_90_lookup.csv
 
     logging:
       driver: "json-file"

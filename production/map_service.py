@@ -294,10 +294,7 @@ class MapService:
 
             # Ajouter statistiques (si show_stats=True)
             if show_stats:
-                nb_communes = len(communes)
-                nb_depts = len(geojsons)
-                nb_colorisees = gdf['visited'].sum() if 'visited' in gdf.columns else 0
-                stats_text = f"🚴 {nb_communes} communes | 📍 {nb_depts} départements | ✓ {nb_colorisees} colorisées"
+                stats_text = f"🚴 {len(communes)} communes | 📍 {len(geojsons)} départements"
                 fig.text(0.5, 0.01, stats_text, ha='center', fontsize=12)
 
             # Rapport communes non reconnues
@@ -327,12 +324,12 @@ class MapService:
                         # Marquer celles qui sont dans le GPX
                         proches_in_gpx = [c for c in proches if c in communes]
                         if proches_in_gpx:
-                            rapport += f"  ≈ {nom} → {', '.join(proches_in_gpx)} ✓\n"
+                            rapport += f"  ≈ {str(nom) if nom else '?'} → {', '.join(proches_in_gpx)} ✓\n"
                         else:
-                            rapport += f"  ✗ {nom} → {', '.join(proches[:2])}\n"
+                            rapport += f"  ✗ {str(nom) if nom else '?'} → {', '.join(str(p) for p in proches[:2])}\n"
                     else:
-                        rapport += f"  ✗ {nom}\n"
-                        logger.warning(f"  ✗ {nom} → aucune correspondance")
+                        rapport += f"  ✗ {str(nom) if nom else '?'}\n"
+                        logger.warning(f"  ✗ {str(nom) if nom else '?'} → aucune correspondance")
 
             # Exporter PNG en bytes
             buf = io.BytesIO()
@@ -342,7 +339,7 @@ class MapService:
 
             plt.close(fig)
 
-            logger.info(f"Carte générée: {nb_communes} communes, {nb_depts} depts, {len(png_bytes)} bytes")
+            logger.info(f"Carte générée: {len(png_bytes)} bytes")
             return (png_bytes, rapport)
 
         except Exception as e:

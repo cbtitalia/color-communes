@@ -90,20 +90,19 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     logger.info(f"Commande /help from {user.id}")
 
     await update.message.reply_text(
-        "📖 **Aide Color_communes**\n\n"
-        "1️⃣ **Envoie un GPX** — Je genere une carte des communes traversees\n"
-        "2️⃣ **/validate** — Valider communes (doublons, mismatches, corrections)\n"
-        "3️⃣ **/cumul** — Voir toutes les communes depuis le debut\n"
-        "4️⃣ **/stats** — Stats (communes, departements, sorties)\n"
-        "5️⃣ **/history YYYY-MM-DD** — Communes depuis une date\n"
-        "6️⃣ **/compare YYYY-MM-DD** — Avant/apres une date pivot\n"
-        "7️⃣ **/settings** — Palette couleurs et taille carte\n"
-        "8️⃣ **/gpx_list** — Historique des fichiers importes\n"
-        "9️⃣ **/reset** — Reinitialiser la base\n\n"
+        "Aide Color_communes\n\n"
+        "1. Envoie un GPX - Je genere une carte des communes traversees\n"
+        "2. /validate - Valider communes (doublons, mismatches, corrections)\n"
+        "3. /cumul - Voir toutes les communes depuis le debut\n"
+        "4. /stats - Stats (communes, departements, sorties)\n"
+        "5. /history YYYY-MM-DD - Communes depuis une date\n"
+        "6. /compare YYYY-MM-DD - Avant/apres une date pivot\n"
+        "7. /settings - Palette couleurs et taille carte\n"
+        "8. /gpx_list - Historique des fichiers importes\n"
+        "9. /reset - Reinitialiser la base\n\n"
         "Les fichiers acceptes: GPX (Komoot, Strava, Garmin)\n"
         "Colorisation:\n"
-        "  🟡 1 passage | 🟠 2-4 passages | 🔴 5-9 passages | 🔴🔴 10+ passages",
-        parse_mode='Markdown'
+        "  🟡 1 passage | 🟠 2-4 passages | 🔴 5-9 passages | 🔴🔴 10+ passages"
     )
 
 async def cumul_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -160,19 +159,19 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         return
 
     msg = (
-        f"📊 **Statistiques cumulatives**\n\n"
-        f"🏘️ Communes totales: {stats['total_communes']}\n"
-        f"📍 Départements: {stats['total_depts']}\n"
-        f"🚴 Passages cumulés: {stats['total_passages']}\n"
-        f"📆 Première visite: {stats['first_visit']}\n"
-        f"📆 Dernière visite: {stats['last_visit']}\n\n"
-        f"**Top communes:**\n"
+        f"Statistiques cumulatives\n\n"
+        f"Communes totales: {stats['total_communes']}\n"
+        f"Departements: {stats['total_depts']}\n"
+        f"Passages cumules: {stats['total_passages']}\n"
+        f"Premiere visite: {stats['first_visit']}\n"
+        f"Derniere visite: {stats['last_visit']}\n\n"
+        f"Top communes:\n"
     )
 
     for i, (commune, count) in enumerate(stats['top_communes'][:5], 1):
         msg += f"{i}. {commune} ({count} passages)\n"
 
-    await update.message.reply_text(msg, parse_mode='Markdown')
+    await update.message.reply_text(msg)
 
 async def reset_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Start reset dialog"""
@@ -343,12 +342,11 @@ async def settings_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     current_size = db_svc.get_user_preference(user.id, 'map_size') or 'medium'
 
     await update.message.reply_text(
-        f"⚙️ **Préférences**\n\n"
+        f"Preferences\n\n"
         f"Palette actuelle: {current_palette}\n"
         f"Taille actuelle: {current_size}\n\n"
         f"Palette de couleurs:",
-        reply_markup=reply_markup,
-        parse_mode='Markdown'
+        reply_markup=reply_markup
     )
 
 async def settings_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -377,7 +375,7 @@ async def gpx_list_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         await update.message.reply_text("❌ Aucun GPX importé")
         return
 
-    msg = "📋 **Historique des GPX importés**\n\n"
+    msg = "Historique des GPX importes\n\n"
     for i, entry in enumerate(history[:20], 1):  # Limiter à 20 derniers
         date_str = entry['processed_at'].split('T')[0] if entry['processed_at'] else "N/A"
         msg += f"{i}. {date_str} | {entry['filename']}\n"
@@ -386,7 +384,7 @@ async def gpx_list_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     if len(history) > 20:
         msg += f"\n... et {len(history) - 20} autres fichiers"
 
-    await update.message.reply_text(msg, parse_mode='Markdown')
+    await update.message.reply_text(msg)
 
 def detect_unmatched_communes(communes: Dict, geojsons: Dict) -> Dict:
     """Détecter communes sans correspondance GeoJSON et chercher proches matches"""
@@ -503,48 +501,48 @@ async def validate_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     reply_method = update.message.reply_text if update.message else update.callback_query.message.reply_text
 
     if not unmatched:
-        msg = "✅ **Validation complète**\n\n"
+        msg = "Validation complète\n\n"
         msg += f"{len(communes_auto_corrected)} communes validées avec succès !\n"
         if auto_corrections_applied > 0:
-            msg += f"\n🧠 {auto_corrections_applied} corrections auto-appliquées"
+            msg += f"\n{auto_corrections_applied} corrections auto-appliquées"
         msg += "\nAucun problème détecté."
 
-        await reply_method(msg, parse_mode='Markdown')
+        await reply_method(msg)
         return
 
     # Workflow: approuver une commune à la fois
-    msg = f"⚠️ **Validation des communes**\n\n"
-    msg += f"**{len(unmatched)} communes à valider**\n\n"
+    msg = f"Validation des communes\n\n"
+    msg += f"{len(unmatched)} communes à valider\n\n"
 
     # Afficher tableau de toutes les communes avec suggestions
-    msg += "**TABLEAU - Communes sans JSON / Suggestions:**\n\n"
-    msg += "```\n"
-    msg += f"{'#':<3} | {'Commune':<30} | {'Suggestion':<30}\n"
-    msg += "-" * 68 + "\n"
+    msg += "Communes sans correspondance:\n\n"
 
     for i, comm in enumerate(unmatched[:10], 1):
         sugg = ""
         if comm in suggestions and suggestions[comm]:
-            sugg = suggestions[comm][0]  # Première suggestion
-        msg += f"{i:<3} | {comm:<30} | {sugg:<30}\n"
+            sugg = suggestions[comm][0]
+        msg += f"{i}. {comm}"
+        if sugg:
+            msg += f" -> {sugg}"
+        msg += "\n"
 
     if len(unmatched) > 10:
         msg += f"... et {len(unmatched) - 10} autres\n"
 
-    msg += "```\n\n"
+    msg += "\n"
 
     # Afficher la première commune en détail
     current_idx = 0
     current_commune = unmatched[current_idx]
 
-    msg += f"**VALIDATION #1/{len(unmatched)}** — ❌ **{current_commune}**\n\n"
+    msg += f"VALIDATION 1/{len(unmatched)} - {current_commune}\n\n"
 
     if current_commune in suggestions and suggestions[current_commune]:
         msg += "Suggestions proposées:\n"
         for i, sugg in enumerate(suggestions[current_commune], 1):
             msg += f"  {i}. {sugg}\n"
     else:
-        msg += "*(Aucune suggestion)*\n"
+        msg += "(Aucune suggestion)\n"
 
     # Boutons: approuver avec suggestion ou ignorer
     keyboard_buttons = []
@@ -562,7 +560,7 @@ async def validate_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     keyboard = InlineKeyboardMarkup(keyboard_buttons)
 
     logger.info(f"✉️ Envoi message validation: {len(unmatched)} unmatched, {len(keyboard_buttons)} boutons")
-    await reply_method(msg, reply_markup=keyboard, parse_mode='Markdown')
+    await reply_method(msg, reply_markup=keyboard)
     logger.info(f"✅ Message validation envoyé!")
 
     # Sauvegarder l'état dans le context
@@ -666,8 +664,8 @@ async def _show_next_commune(query, context, idx: int):
     state['current_idx'] = idx
     current_commune = unmatched[idx]
 
-    msg = f"⚠️ **Validation des communes** — #{idx + 1}/{len(unmatched)}\n\n"
-    msg += f"❌ **{current_commune}**\n\n"
+    msg = f"Validation des communes - #{idx + 1}/{len(unmatched)}\n\n"
+    msg += f"{current_commune}\n\n"
 
     if current_commune in suggestions and suggestions[current_commune]:
         msg += "Suggestions:\n"
@@ -688,7 +686,7 @@ async def _show_next_commune(query, context, idx: int):
     ])
 
     keyboard = InlineKeyboardMarkup(keyboard_buttons)
-    await query.edit_message_text(msg, reply_markup=keyboard, parse_mode='Markdown')
+    await query.edit_message_text(msg, reply_markup=keyboard)
 
 async def _finish_validation(query, context, corrections_applied: dict):
     """Régénérer la carte et finir la validation"""
@@ -708,7 +706,7 @@ async def _finish_validation(query, context, corrections_applied: dict):
     palette = context.user_data.get('palette', 'classic')
     map_size = context.user_data.get('map_size', 'medium')
 
-    await query.edit_message_text("🔄 **Régénération de la carte...**")
+    await query.edit_message_text("Regeneration de la carte...")
 
     try:
         result_map = map_svc.generate_map(
@@ -725,14 +723,14 @@ async def _finish_validation(query, context, corrections_applied: dict):
             await query.message.reply_photo(
                 photo=png_bytes,
                 caption=(
-                    f"✅ **Validation terminée !**\n\n"
+                    f"Validation terminee !\n\n"
                     f"📝 Corrections approuvées: {len(corrections_applied)}\n"
                     f"🏘️ Communes validées: {len(communes_auto_corrected)}"
                 )
             )
 
             await query.edit_message_text(
-                f"✅ **Carte régénérée!**\n\n"
+                f"Carte regeneree !\n\n"
                 f"✓ {len(corrections_applied)} corrections appliquées\n"
                 f"✓ {len(corrections_applied)} corrections sauvegardées pour futurs GPX"
             )
@@ -842,48 +840,67 @@ async def send_suspicious_communes(update: Update, context: ContextTypes.DEFAULT
     """Envoyer les communes suspectes pour validation"""
     from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
+    if not context.user_data:
+        context.user_data = {}
+    if 'suspicious_communes' not in context.user_data:
+        context.user_data['suspicious_communes'] = {}
+
     for idx, commune in enumerate(communes_suspects[:5]):
+        commune_name = str(commune.get('name', '?'))
+        commune_count = commune.get('count', '?')
+        commune_code = commune.get('code', '?')
+        lat = commune.get('lat', 0)
+        lon = commune.get('lon', 0)
+
+        lat_str = f"{lat:.4f}" if lat else "?"
+        lon_str = f"{lon:.4f}" if lon else "?"
+
+        suspect_id = f"{filename}_{idx}"
+        context.user_data['suspicious_communes'][suspect_id] = commune
+
         keyboard = InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("✅ Ajouter", callback_data=f"add_commune_{idx}_{commune['name']}"),
-                InlineKeyboardButton("❌ Ignorer", callback_data=f"skip_commune_{idx}_{commune['name']}")
+                InlineKeyboardButton("✅ Ajouter", callback_data=f"add_suspect_{suspect_id}"),
+                InlineKeyboardButton("❌ Ignorer", callback_data=f"skip_suspect_{suspect_id}")
             ]
         ])
 
         msg = (
-            f"⚠️ **Commune suspecte détectée**\n\n"
-            f"📍 {commune['name']}\n"
-            f"📊 Passages: {commune['count']}\n"
-            f"🗺️  Coords: {commune['lat']:.4f}, {commune['lon']:.4f}\n"
-            f"📝 Code INSEE: {commune['code']}\n\n"
-            f"Ajouter à communes_mapping.csv ?"
+            f"Commune suspecte\n\n"
+            f"{commune_name}\n"
+            f"Passages: {commune_count}\n"
+            f"Coords: {lat_str}, {lon_str}\n"
+            f"INSEE: {commune_code}\n\n"
+            f"Ajouter ?"
         )
 
-        await update.message.reply_text(msg, reply_markup=keyboard, parse_mode='Markdown')
-        logger.info(f"Suggestion envoyée: {commune['name']}")
+        await update.message.reply_text(msg, reply_markup=keyboard)
+        logger.info(f"Suggestion envoyée: {commune_name}")
 
 async def handle_add_commune(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Ajouter une commune à communes_mapping.csv"""
     query = update.callback_query
-    commune_name = query.data.split('_', 3)[-1]
+    suspect_id = query.data.replace('add_suspect_', '')
 
-    await query.answer(f"✅ {commune_name} sera ajoutée")
+    suspect = context.user_data.get('suspicious_communes', {}).get(suspect_id)
+    if not suspect:
+        await query.answer("❌ Donnée expirée")
+        return
+
+    commune_name = str(suspect.get('name', '?'))
+    await query.answer(f"✅ {commune_name} ajoutée")
 
     try:
-        # Ajouter directement à communes_mapping.csv (dans le conteneur)
         import csv
         mapping_file = Path('/app/communes_mapping.csv')
 
-        # Ajouter la ligne
         with open(mapping_file, 'a', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
-            # Format: nom_original,nom_correct,code_insee,departement,latitude,longitude,notes
             writer.writerow([commune_name, commune_name, '90052', '90', '0.0', '0.0', 'Auto-validation Telegram'])
 
-        await query.edit_message_text(f"✅ {commune_name} ajoutée!\n\n⚠️ Redémarrage du bot en cours...")
+        await query.edit_message_text(f"✅ {commune_name} ajoutée")
         logger.info(f"✅ Commune ajoutée: {commune_name}")
 
-        # Redémarrer le bot pour recharger communes_mapping.csv
         context.bot_data['restart_needed'] = True
 
     except Exception as e:
@@ -893,7 +910,10 @@ async def handle_add_commune(update: Update, context: ContextTypes.DEFAULT_TYPE)
 async def handle_skip_commune(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Ignorer une commune"""
     query = update.callback_query
-    commune_name = query.data.split('_', 3)[-1]
+    suspect_id = query.data.replace('skip_suspect_', '')
+
+    suspect = context.user_data.get('suspicious_communes', {}).get(suspect_id)
+    commune_name = str(suspect.get('name', '?')) if suspect else '?'
 
     await query.answer(f"⏭️ {commune_name} ignorée")
     await query.edit_message_text(f"⏭️ {commune_name} ignorée")
@@ -917,10 +937,11 @@ async def handle_gpx(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
             return
         
         # Envoyer message de traitement
+        file_size_kb = (file.file_size / 1024) if file.file_size else 0
         processing_msg = await update.message.reply_text(
             "⏳ Traitement en cours...\n"
             f"📄 Fichier: {file.file_name}\n"
-            f"📦 Taille: {file.file_size / 1024:.1f} KB\n\n"
+            f"📦 Taille: {file_size_kb:.1f} KB\n\n"
             f"Phase 1: Parsing GPX...\n"
             f"Phase 2: Reverse geocoding...\n"
             f"Phase 3: Cache GeoJSON...\n"
@@ -1153,13 +1174,13 @@ async def handle_gpx(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
 
             # Afficher rapport non-matches si nécessaire
             if unmatched:
-                unmatched_msg = "⚠️ **Communes SANS correspondance GeoJSON:**\n\n"
+                unmatched_msg = "Communes SANS correspondance GeoJSON:\n\n"
                 for comm in unmatched[:10]:
                     unmatched_msg += f"❌ {comm}\n"
                 if len(unmatched) > 10:
                     unmatched_msg += f"\n... et {len(unmatched) - 10} autres"
 
-                await update.message.reply_text(unmatched_msg, parse_mode='Markdown')
+                await update.message.reply_text(unmatched_msg)
 
             # Sauvegarder pour validation interactive
             context.user_data['current_gpx'] = file.file_name
@@ -1181,7 +1202,7 @@ async def handle_gpx(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
             logger.info(f"Traitement complet: {len(communes)} communes, {len(geojsons)} GeoJSON, PNG généré")
         
         except Exception as e:
-            logger.error(f"Erreur traitement GPX: {e}")
+            logger.error(f"Erreur traitement GPX: {e}", exc_info=True)
             await update.message.reply_text(f"❌ Erreur: {str(e)[:100]}")
     else:
         await update.message.reply_text(
@@ -1288,8 +1309,8 @@ def main() -> None:
     application.add_handler(CallbackQueryHandler(callback_validate_reject, pattern='^validate_reject$'))
 
     # 🆕 Handlers pour validation communes suspectes
-    application.add_handler(CallbackQueryHandler(handle_add_commune, pattern='^add_commune_'))
-    application.add_handler(CallbackQueryHandler(handle_skip_commune, pattern='^skip_commune_'))
+    application.add_handler(CallbackQueryHandler(handle_add_commune, pattern='^add_suspect_'))
+    application.add_handler(CallbackQueryHandler(handle_skip_commune, pattern='^skip_suspect_'))
 
     # Error handler
     application.add_error_handler(error_handler)
